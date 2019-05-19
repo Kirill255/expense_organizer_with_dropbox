@@ -8,14 +8,28 @@ const dbx = new Dropbox({
 
 const fileListElem = document.querySelector(".js-file-list");
 const loadingElem = document.querySelector(".js-loading");
+const rootPathForm = document.querySelector(".js-root-path__form");
+const rootPathInput = document.querySelector(".js-root-path__input");
+
+rootPathForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  state.rootPath = rootPathInput.value === "/" ? "" : rootPathInput.value.toLowerCase();
+  state.files = [];
+  loadingElem.classList.remove("hidden");
+  init();
+});
 
 const state = {
-  files: []
+  files: [],
+  rootPath: ""
 };
 
 const init = async () => {
   try {
-    const res = await dbx.filesListFolder({ path: "", limit: 20 }); // limit: 5
+    const res = await dbx.filesListFolder({
+      path: state.rootPath,
+      limit: 20 // limit: 5
+    });
     console.log(res);
 
     // if result isn't empty

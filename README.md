@@ -27,7 +27,7 @@ https://stackoverflow.com/questions/53558916/babel-7-referenceerror-regeneratorr
 
 ## Response from API
 
-**filesListFolder**
+**filesListFolder** [Link](https://dropbox.github.io/dropbox-sdk-js/Dropbox.html#filesListFolder__anchor)
 
 Basic format for request:
 
@@ -69,7 +69,7 @@ Response:
 }
 ```
 
-**filesGetThumbnailBatch**
+**filesGetThumbnailBatch** [Link](https://dropbox.github.io/dropbox-sdk-js/Dropbox.html#filesGetThumbnailBatch__anchor)
 
 Basic format for request:
 
@@ -116,7 +116,7 @@ Response:
 }
 ```
 
-**filesListFolderContinue**
+**filesListFolderContinue** [Link](https://dropbox.github.io/dropbox-sdk-js/Dropbox.html#filesListFolderContinue__anchor)
 
 Basic format for request:
 
@@ -126,3 +126,79 @@ dbx
   .then(console.log)
   .catch(console.error);
 ```
+
+Response:
+
+```json
+{
+  ".tag": "async_job_id",
+  "async_job_id": "dbjid:AAAlj4yg-FV0aXOi9xY4pSCeWW4MC8xeBdmrnxa669xkPYKxekusGajGIW8BYG6unhDOVBLfVej-N7pupXzSMA0Q"
+}
+```
+
+**filesMoveBatchV2** [Link](https://dropbox.github.io/dropbox-sdk-js/Dropbox.html#filesMoveBatchV2__anchor)
+
+Basic format for request:
+
+```js
+dbx
+  .filesMoveBatchV2({
+    entries: [
+      {
+        from_path,
+        to_path
+      }
+    ]
+  })
+  .then(console.log)
+  .catch(console.error);
+```
+
+**filesMoveBatchCheckV2** [Link](https://dropbox.github.io/dropbox-sdk-js/Dropbox.html#filesMoveBatchCheckV2__anchor)
+
+Basic format for request:
+
+```js
+dbx
+  .filesMoveBatchCheckV2({ async_job_id })
+  .then(console.log)
+  .catch(console.error);
+```
+
+Response:
+
+```json
+{ ".tag": "in_progress" }
+```
+
+and after organizing files:
+
+```json
+{
+  ".tag": "complete",
+  "entries": [
+    {
+      ".tag": "success",
+      "success": {
+        ".tag": "file",
+        "name": "car1.jpg",
+        "path_lower": "/2019/5/car1.jpg",
+        "path_display": "/2019/5/car1.jpg",
+        "id": "id:kmNVy33j4VAAAAAAAAAAGw",
+        "client_modified": "2019-05-18T15:44:22Z",
+        "server_modified": "2019-05-19T10:43:40Z",
+        "rev": "0118000000014aa54c10",
+        "size": 52993,
+        "is_downloadable": true,
+        "content_hash": "548af844b18345396e06dcb1d2e2f1bf82e60e770a3a515ca84be3d029486f47"
+      }
+    }
+  ]
+}
+```
+
+## App
+
+![org1](https://user-images.githubusercontent.com/24504648/57982260-855b4d80-7a4b-11e9-8ac5-4553bc818744.png)
+
+![org2](https://user-images.githubusercontent.com/24504648/57982261-88eed480-7a4b-11e9-995e-0f741e17c529.png)

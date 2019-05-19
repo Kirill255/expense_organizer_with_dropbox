@@ -10,13 +10,22 @@ const fileListElem = document.querySelector(".js-file-list");
 const loadingElem = document.querySelector(".js-loading");
 const rootPathForm = document.querySelector(".js-root-path__form");
 const rootPathInput = document.querySelector(".js-root-path__input");
+const organizeBtn = document.querySelector(".js-organize-btn");
 
 rootPathForm.addEventListener("submit", (e) => {
   e.preventDefault();
   state.rootPath = rootPathInput.value === "/" ? "" : rootPathInput.value.toLowerCase();
-  state.files = [];
-  loadingElem.classList.remove("hidden");
-  init();
+  reset();
+});
+
+organizeBtn.addEventListener("click", async (e) => {
+  const originalMsg = e.target.innerHTML; // get button text -> "Organize"
+  e.target.disabled = true;
+  e.target.innerHTML = "Working..."; // change button text -> "Working..."
+  await moveFilesToDatedFolders();
+  e.target.disabled = false;
+  e.target.innerHTML = originalMsg; // return back button text -> "Organize"
+  reset();
 });
 
 const state = {
@@ -137,6 +146,40 @@ const getThumbnails = async (files) => {
   } catch (error) {
     console.error(error);
   }
+};
+
+// all files will be organized in folders with names by years and months of their creation
+const moveFilesToDatedFolders = async () => {
+  const entries = state.files
+    .filter((file) => file[".tag"] === "file")
+    .map((file) => {
+      const date = new Date(file.client_modified);
+      return {
+        from_path: file.path_lower,
+        to_path: `${state.rootPath}/${date.getFullYear()}/${date.getUTCMonth() + 1}/${file.name}` // "root/year/month/file"
+      };
+    });
+
+  try {
+    let res = await dbx.filesMoveBatchV2({ entries });
+    console.log(res);
+
+    const { async_job_id } = res;
+    if (async_job_id) {
+      do {
+        res = await dbx.filesMoveBatchCheckV2({ async_job_id });
+        console.log(res);
+      } while (res[".tag"] === "in_progress");
+    }
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+const reset = () => {
+  state.files = [];
+  loadingElem.classList.remove("hidden");
+  init();
 };
 
 init();

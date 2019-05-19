@@ -4,6 +4,8 @@ https://scrimba.com/playlist/pnyeEhr
 
 https://www.dropbox.com/developers
 
+https://dropbox.github.io/dropbox-api-v2-explorer
+
 ## Start
 
 1. Replace with your accessToken:
@@ -18,6 +20,10 @@ const dbx = new Dropbox({
 2. `npm run build`
 
 3. Open in the browser `/dist/index.html` file.
+
+## Other
+
+https://stackoverflow.com/questions/53558916/babel-7-referenceerror-regeneratorruntime-is-not-defined
 
 ## Response from API
 
@@ -108,4 +114,15 @@ Response:
     }
   ]
 }
+```
+
+**filesListFolderContinue**
+
+Basic format for request:
+
+```js
+dbx
+  .filesListFolderContinue({ cursor })
+  .then(console.log)
+  .catch(console.error);
 ```

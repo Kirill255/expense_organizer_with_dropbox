@@ -7,22 +7,33 @@ const dbx = new Dropbox({
 });
 
 const fileListElem = document.querySelector(".js-file-list");
+const loadingElem = document.querySelector(".js-loading");
 
 const state = {
   files: []
 };
 
-const init = () => {
-  dbx
-    .filesListFolder({ path: "", limit: 20 })
-    .then((res) => {
-      console.log(res);
-      // if result isn't empty
-      if (res.entries.length) {
-        updateFiles(res.entries);
+const init = async () => {
+  try {
+    const res = await dbx.filesListFolder({ path: "", limit: 20 }); // limit: 5
+    console.log(res);
+
+    // if result isn't empty
+    if (res.entries.length) {
+      updateFiles(res.entries);
+
+      // load more
+      if (res.has_more) {
+        loadingElem.classList.remove("hidden");
+        await getMoreFiles(res.cursor, (more) => updateFiles(more.entries));
+        loadingElem.classList.add("hidden");
+      } else {
+        loadingElem.classList.add("hidden");
       }
-    })
-    .catch(console.error);
+    }
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const updateFiles = (files) => {
@@ -30,6 +41,20 @@ const updateFiles = (files) => {
 
   renderFiles();
   getThumbnails(files);
+};
+
+const getMoreFiles = async (cursor, cb) => {
+  try {
+    const res = await dbx.filesListFolderContinue({ cursor });
+    console.log(res);
+
+    if (cb) cb(res);
+    if (res.has_more) {
+      await getMoreFiles(res.cursor, cb);
+    }
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const renderFiles = () => {
@@ -66,7 +91,7 @@ const renderFiles = () => {
     .join(""); // because we recieved array of strings after mapping
 };
 
-const getThumbnails = (files) => {
+const getThumbnails = async (files) => {
   const paths = files
     .filter((file) => file[".tag"] === "file") // only for files, not folders
     .map((file) => ({
@@ -74,29 +99,30 @@ const getThumbnails = (files) => {
       size: "w32h32"
     }));
 
-  dbx
-    .filesGetThumbnailBatch({
+  try {
+    const res = await dbx.filesGetThumbnailBatch({
       entries: paths
-    })
-    .then((res) => {
-      console.log(res);
-      // make a copy of state.files
-      const newStateFiles = [...state.files];
-      // loop through the file objects returned from dbx
-      res.entries.forEach((file) => {
-        // figure out the index of the file we need to update
-        let indexToUpdate = state.files.findIndex(
-          (stateFile) => file.metadata.path_lower === stateFile.path_lower
-        );
-        // put a .thumbnail property on the corresponding file
-        newStateFiles[indexToUpdate].thumbnail = file.thumbnail;
-      });
+    });
+    console.log(res);
 
-      state.files = newStateFiles;
+    // make a copy of state.files
+    const newStateFiles = [...state.files];
+    // loop through the file objects returned from dbx
+    res.entries.forEach((file) => {
+      // figure out the index of the file we need to update
+      let indexToUpdate = state.files.findIndex(
+        (stateFile) => file.metadata.path_lower === stateFile.path_lower
+      );
+      // put a .thumbnail property on the corresponding file
+      newStateFiles[indexToUpdate].thumbnail = file.thumbnail;
+    });
 
-      renderFiles();
-    })
-    .catch(console.error);
+    state.files = newStateFiles;
+
+    renderFiles();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 init();
